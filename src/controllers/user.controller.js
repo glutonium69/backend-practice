@@ -11,7 +11,7 @@ export const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Please fillup all the requied fills")
     }
 
-    const registeredUser = User.findOne({
+    const registeredUser = await User.findOne({
         $or: [{ username }, { email }]
     });
 
@@ -20,7 +20,13 @@ export const registerUser = asyncHandler(async (req, res) => {
     }
 
     const avatarLocalPath = req.files?.avatar[0]?.path;
-    const coverImageLocalPath = req.files?.coverImage[0]?.path;
+    // const coverImageLocalPath = req.files?.coverImage[0]?.path;
+
+    let coverImageLocalPath = undefined;
+
+    if(req.files && req.files.coverImage && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0){
+        coverImageLocalPath = req.files.coverImage[0].path;
+    }
 
     if(!avatarLocalPath){
         throw new ApiError(400, "Avatar file is required");
