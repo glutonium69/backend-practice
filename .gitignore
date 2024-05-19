@@ -118,5 +118,6 @@ dist
 .yarn/install-state.gz
 .pnp.*
 .vscode
-
+package.sublime-project
+package.sublime-workspace
 # End of https://mrkandreev.name/snippets/gitignore-generator/#Node
