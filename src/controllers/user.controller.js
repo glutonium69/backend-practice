@@ -12,7 +12,9 @@ const generateAccessAndRefreshToken = async(userId) => {
         const refreshToken = user.generateRefreshToken();
 
         user.refreshToken = refreshToken; 
-
+        
+        // Skip schema validation before saving the document to the database
+        // Useful when the data has already been validated or for handling partial updates
         await user.save({ validateBeforeSave: false });
 
         return { accessToken, refreshToken };
@@ -23,12 +25,15 @@ const generateAccessAndRefreshToken = async(userId) => {
 }
 
 export const registerUser = asyncHandler(async (req, res) => {
+    // extract data from req body
     const {username, fullname, email, password} = req.body;
 
+    // check if all required data are given
     if([username, fullname, email, password].some(field => field?.trim() === "")){
         throw new ApiError(400, "Please fillup all the requied fills")
     }
 
+    // check if a user already exists with the given username and email and throw error if yes
     const registeredUser = await User.findOne({
         $or: [{ username }, { email }]
     });
@@ -37,8 +42,8 @@ export const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(409, "User with username or email already exists");
     }
 
+    // extract the avatar and cover image path on which it is saved in disk
     const avatarLocalPath = req.files?.avatar[0]?.path;
-    // const coverImageLocalPath = req.files?.coverImage[0]?.path;
 
     let coverImageLocalPath = undefined;
 
@@ -50,9 +55,11 @@ export const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Avatar file is required");
     }
 
+    // upload files in cloudinary
     const uploadAvatar = await uploadFileOnCloudinary(avatarLocalPath);
     const uploadCoverImage = await uploadFileOnCloudinary(coverImageLocalPath);
 
+    // throw error if avatar upload fails
     if(!uploadAvatar){
         throw new ApiError(400, "Avatar upload failiure");
     }
@@ -78,12 +85,15 @@ export const registerUser = asyncHandler(async (req, res) => {
 })
 
 export const loginUser = asyncHandler(async (req, res) => {
+    // extract data from req body
     const { username, email, password } = req.body;
 
-    if([username, email, password].some(field => field?.trim() === "")){
+    // check if username+email or password is empty. if both empty then throw error
+    if((!username && !email) || !password){
         throw new ApiError(400, "Please fillup all the requied fields");
     }
 
+    // check is there is such user with the user or email. if not then send error
     const registeredUser = await User.findOne({
         $or: [{ username }, { email }]
     });
@@ -92,6 +102,7 @@ export const loginUser = asyncHandler(async (req, res) => {
         throw new ApiError(404, "User not found");
     }
 
+    // check if password is correct or not
     const isPassCorrect = await registeredUser.comparePassword(password);
 
     if(!isPassCorrect){

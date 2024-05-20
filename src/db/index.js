@@ -7,6 +7,6 @@ export const connectDB = async () => {
         console.log("mongoDB connection successfull")
     } catch (error) {
         console.log("MONGODB connection failed", error);
-        process.exit(1);
+        process.exit(1); // this basically forces node to terminate everything that's going on
     }
 }

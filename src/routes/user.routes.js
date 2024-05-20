@@ -6,7 +6,7 @@ import { verifyJWT } from "../middlewares/auth.middleware.js";
 export const userRouter = Router();
 
 userRouter.route("/register").post(
-    upload.fields([
+    upload.fields([ // upload() is a middleware given by multer. this lets us easily access files from req object which oterwise isnt possible 
         {
             name: "avatar",
             maxCount: 1
@@ -22,4 +22,6 @@ userRouter.route("/register").post(
 userRouter.route("/login").post(loginUser);
 
 // secured route
+
+// the verifyJWT is a custom middleware that uses access token from saved cookie to check if user is logged in
 userRouter.route("/logout").post(verifyJWT, logoutUser);
