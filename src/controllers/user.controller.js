@@ -9,16 +9,16 @@ const generateAccessAndRefreshToken = async(userId) => {
     try {
         const user = await User.findById(userId);
         const accessToken = user.generateAccessToken();
-        const refreashToken = user.generateRefreshToken();
+        const refreshToken = user.generateRefreshToken();
 
-        user.refreashToken = refreashToken; 
+        user.refreshToken = refreshToken; 
 
         await user.save({ validateBeforeSave: false });
 
-        return { accessToken, refreashToken };
+        return { accessToken, refreshToken };
 
     } catch (error) {
-        throw new ApiError(500, "Something went wrong while generating access and refreash token");
+        throw new ApiError(500, "Something went wrong while generating access and refresh token");
     }
 }
 
@@ -98,7 +98,7 @@ export const loginUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Incorrect password");
     }
 
-    const { accessToken, refreashToken } = await generateAccessAndRefreshToken(registeredUser._id);
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(registeredUser._id);
 
     const loggedUser = await User.findById(registeredUser._id).select(
         "-password -refreshToken"
@@ -112,14 +112,14 @@ export const loginUser = asyncHandler(async (req, res) => {
     return res
     .send(200)
     .cookie("accessToken", accessToken, cookieOptions)
-    .cookie("refreshToken", refreashToken, cookieOptions)
+    .cookie("refreshToken", refreshToken, cookieOptions)
     .json(
         new ApiResponse(
             200,
             {
                 user: loggedUser,
                 accessToken,
-                refreashToken
+                refreshToken
             },
             "User login successfull"
         )
@@ -128,7 +128,7 @@ export const loginUser = asyncHandler(async (req, res) => {
 
 export const logoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(req.user._id, {
-        $set: { refreashToken: undefined }
+        $set: { refreshToken: undefined }
     });
 
     const cookieOptions = {
