@@ -248,3 +248,59 @@ export const updateAccDetails = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, updatedUserInfo, "Account details successfully updated"));
 })
+
+export const updateAvatar = asyncHandler(async (req, res) => {
+    const avatarLocalPath = req.files?.avatar[0]?.path;
+
+    if(!avatarLocalPath){
+        throw new ApiError(400, "Avatar is required");
+    }
+
+    const uploadAvatar = await uploadFileOnCloudinary(avatarLocalPath);
+
+    if(!uploadAvatar?.url){
+        throw new ApiError(400, "Avatar upload failiure");
+    }
+
+    const updatedUserAvatar = await User.findByIdAndUpdate(
+        req?.user?._id,
+        {
+            $set: { avatar: uploadAvatar.url }
+        },
+        {
+            new: true
+        }
+    ).select("avatar");
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200, { avatar: updatedUserAvatar }, "Avatar successfully updated"));
+})
+
+export const updateCoverImage = asyncHandler(async (req, res) => {
+    const coverImageLocalPath = req.files?.coverImage[0]?.path;
+
+    if(!coverImageLocalPath){
+        throw new ApiError(400, "Cover image is required");
+    }
+
+    const uploadCoverImage = await uploadFileOnCloudinary(coverImageLocalPath);
+
+    if(!uploadCoverImage?.url){
+        throw new ApiError(400, "Cover image upload failiure");
+    }
+
+    const updatedUserCoverImage = await User.findByIdAndUpdate(
+        req?.user?._id,
+        {
+            $set: { coverImage: uploadCoverImage.url }
+        },
+        {
+            new: true
+        }
+    ).select("coverImage");
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200, { coverImage: updatedUserCoverImage }, "Cover image successfully updated"));
+})
