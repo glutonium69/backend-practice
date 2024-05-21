@@ -201,7 +201,7 @@ export const updatePassword = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Something went wrong. User not found");
     }
 
-    const isPasswordCorrect = await User.comparePassword(oldPassword);
+    const isPasswordCorrect = await user.comparePassword(oldPassword);
 
     if(!isPasswordCorrect){
         throw new ApiError(400, "Incorrect password");
