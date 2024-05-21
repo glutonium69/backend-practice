@@ -214,3 +214,15 @@ export const updatePassword = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, null, "Password successfully updated"));
 })
+
+export const getUserInfo = asyncHandler(async (req, res) => {
+    const userInfo = req?.user;
+
+    if(!userInfo){
+        throw new ApiError(404, "Something went wrong. User not found");
+    }
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200, userInfo))
+})
