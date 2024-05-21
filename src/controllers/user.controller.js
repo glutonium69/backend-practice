@@ -226,3 +226,25 @@ export const getUserInfo = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, userInfo))
 })
+
+export const updateAccDetails = asyncHandler(async (req, res) => {
+    const { fullname } = req.body;
+
+    if(!fullname){
+        throw new ApiError(400, "Please provide fullname");
+    }
+
+    const updatedUserInfo = await User.findByIdAndUpdate(
+        req?.user?._id,
+        {
+            $set: { fullname }
+        },
+        {
+            new: true
+        }
+    ).select("-password -refreshToken");
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200, updatedUserInfo, "Account details successfully updated"));
+})
