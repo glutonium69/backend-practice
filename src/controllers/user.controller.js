@@ -286,7 +286,7 @@ export const updateAvatar = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Avatar is required");
     }
 
-    const deleteAvatar = await deleteFromCloudinary(req?.user?.avatar?.publicId);
+    const deleteAvatar = await deleteFromCloudinary(req?.user?.avatar?.publicId, "image");
 
     if(!deleteAvatar){
         throw new ApiError(400, "Previous avatar deletion failiure. Please try again");
@@ -324,7 +324,7 @@ export const updateCoverImage = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Cover image is required");
     }
 
-    const deleteCoverImage = await deleteFromCloudinary(req?.user?.coverImage?.publicId);
+    const deleteCoverImage = await deleteFromCloudinary(req?.user?.coverImage?.publicId, "image");
 
     if(!deleteCoverImage){
         throw new ApiError(400, "Previous cover image deletion failiure. Please try again");
