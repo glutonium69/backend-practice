@@ -105,7 +105,7 @@ export const registerUser = asyncHandler(async (req, res) => {
 
 
     const createdUser = await User.findById(user._id)?.select(
-        "-password -refreshToken"
+        "-password -refreshToken -avatar.publicId -coverImage.publicId"
     );
 
     if(!createdUser){
@@ -143,7 +143,7 @@ export const loginUser = asyncHandler(async (req, res) => {
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(registeredUser._id);
 
     const loggedUser = await User.findById(registeredUser._id).select(
-        "-password -refreshToken"
+        "-password -refreshToken -avatar.publicId -coverImage.publicId"
     );
 
     const cookieOptions = {
@@ -272,7 +272,7 @@ export const updateAccDetails = asyncHandler(async (req, res) => {
         {
             new: true
         }
-    ).select("-password -refreshToken");
+    ).select("-password -refreshToken -avatar.publicId -coverImage.publicId");
 
     return res
     .status(200)
@@ -310,7 +310,7 @@ export const updateAvatar = asyncHandler(async (req, res) => {
         {
             new: true
         }
-    ).select("avatar");
+    ).select("avatar.url");
 
     return res
     .status(200)
@@ -349,7 +349,7 @@ export const updateCoverImage = asyncHandler(async (req, res) => {
         {
             new: true
         }
-    ).select("coverImage");
+    ).select("coverImage.url");
 
     return res
     .status(200)
