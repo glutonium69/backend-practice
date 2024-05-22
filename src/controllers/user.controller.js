@@ -65,14 +65,44 @@ export const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Avatar upload failiure");
     }
 
-    const user = await User.create({
+    // const user = await User.create({
+    //     username: username.toLowerCase(),
+    //     fullname,
+    //     email,
+    //     password,
+    //     avatar: {
+    //         publicId: uploadAvatar?.public_id,
+    //         url: uploadAvatar?.url
+    //     },
+    //     coverImage: uploadCoverImage ? {
+    //         publicId: uploadCoverImage?.public_id,
+    //         url: uploadCoverImage?.url
+    //     } : {
+    //         publicId: "",
+    //         url: ""
+    //     }
+    // });
+
+    const userData = {
         username: username.toLowerCase(),
         fullname,
         email,
         password,
-        avatar: uploadAvatar.url,
-        coverImage: uploadCoverImage?.url || ""
-    });
+        avatar: {
+            publicId: uploadAvatar?.public_id,
+            url: uploadAvatar?.url
+        }
+    };
+
+    if (uploadCoverImage) {
+        userData.coverImage = {
+            publicId: uploadCoverImage.public_id,
+            url: uploadCoverImage.url
+        };
+    }
+
+    const user = await User.create(userData);
+
 
     const createdUser = await User.findById(user._id)?.select(
         "-password -refreshToken"
@@ -265,7 +295,12 @@ export const updateAvatar = asyncHandler(async (req, res) => {
     const updatedUserAvatar = await User.findByIdAndUpdate(
         req?.user?._id,
         {
-            $set: { avatar: uploadAvatar.url }
+            $set: { 
+                avatar: {
+                    publicId: uploadAvatar?.public_id,
+                    url: uploadAvatar?.url
+                } 
+            }
         },
         {
             new: true
@@ -293,7 +328,12 @@ export const updateCoverImage = asyncHandler(async (req, res) => {
     const updatedUserCoverImage = await User.findByIdAndUpdate(
         req?.user?._id,
         {
-            $set: { coverImage: uploadCoverImage.url }
+            $set: { 
+                coverImage: {
+                    publicId: uploadCoverImage?.public_id,
+                    url: uploadCoverImage?.url
+                } 
+            }
         },
         {
             new: true
