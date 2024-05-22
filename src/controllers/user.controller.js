@@ -245,6 +245,7 @@ export const updatePassword = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, null, "Password successfully updated"));
 })
 
+// this is when the owner will open their profile
 export const getUserInfo = asyncHandler(async (req, res) => {
     const userInfo = req?.user;
 
@@ -354,4 +355,74 @@ export const updateCoverImage = asyncHandler(async (req, res) => {
     return res
     .status(200)
     .json(new ApiResponse(200, { coverImage: updatedUserCoverImage }, "Cover image successfully updated"));
+})
+
+// this is when a user will visit a channels profile
+export const getChannelInfo = asyncHandler(async (req, res) => {
+    const { username } = req.params;
+
+    if(!username?.trim()){
+        throw new ApiError(400, "Username is required");
+    }
+
+    const channelInfo = await User.aggregate([
+        {
+            $match: {
+                username: username.toLowerCase().trim()
+            }
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers"
+            }
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscribedTo"
+            }
+        },
+        {
+            $addFields: {
+                subscriberCount: {
+                    $size: "$subscribers"
+                },
+                subscribedCount: {
+                    $size: "$subscribedTo"
+                },
+                isSubscribed: {
+                    $cond: {
+                        if: { $in: ["req?.user?._id", "$subscribers.subscriber"] },
+                        then: true,
+                        else: false
+                    }
+                }
+            }
+        },
+        {
+            $project: {
+                username: 1,
+                fullname: 1,
+                email: 1,
+                avatar: 1,
+                coverImage: 1,
+                subscriberCount: 1,
+                subscribedCount: 1,
+                isSubscribed: 1
+            }
+        }
+    ])
+
+    if(!channelInfo?.length){
+        throw new ApiError(404, "Channel info not found");
+    }
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200, channelInfo[0], "Channel profile data fetched succesfully"));
 })
