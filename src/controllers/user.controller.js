@@ -2,7 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
-import { uploadFileOnCloudinary } from "../utils/cloudinary.js";
+import { deleteFromCloudinary, uploadFileOnCloudinary } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 
 
@@ -286,6 +286,11 @@ export const updateAvatar = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Avatar is required");
     }
 
+    const deleteAvatar = await deleteFromCloudinary(req?.user?.avatar?.publicId);
+
+    if(!deleteAvatar){
+        throw new ApiError(400, "Previous avatar deletion failiure. Please try again");
+    }
     const uploadAvatar = await uploadFileOnCloudinary(avatarLocalPath);
 
     if(!uploadAvatar?.url){
@@ -317,6 +322,12 @@ export const updateCoverImage = asyncHandler(async (req, res) => {
 
     if(!coverImageLocalPath){
         throw new ApiError(400, "Cover image is required");
+    }
+
+    const deleteCoverImage = await deleteFromCloudinary(req?.user?.coverImage?.publicId);
+
+    if(!deleteCoverImage){
+        throw new ApiError(400, "Previous cover image deletion failiure. Please try again");
     }
 
     const uploadCoverImage = await uploadFileOnCloudinary(coverImageLocalPath);

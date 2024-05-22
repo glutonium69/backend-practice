@@ -25,3 +25,13 @@ export const uploadFileOnCloudinary = async (localFilePath) => {
         return null;
     }
 }
+
+export const deleteFromCloudinary = async (publicId) => {
+    try {
+        await cloudinary.api.delete_resources(publicId, { resource_type: "auto" });
+        return true;
+    } catch (error) {
+        console.log(error);
+        return false
+    }
+}
