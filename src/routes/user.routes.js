@@ -32,10 +32,9 @@ userRouter.route("/updatePassword").post(verifyJWT, updatePassword);
 
 userRouter.route("/getUserInfo").get(verifyJWT, getUserInfo);
 
-userRouter.route("/updateAccDetails").post(verifyJWT, updateAccDetails);
+userRouter.route("/updateAccDetails").patch(verifyJWT, updateAccDetails);
 
-
-userRouter.route("/updateAvatar").post(
+userRouter.route("/updateAvatar").patch(
     verifyJWT,
     upload.fields(
         [{ 
@@ -45,7 +44,7 @@ userRouter.route("/updateAvatar").post(
     updateAvatar
 );
 
-userRouter.route("/updateCoverImage").post(
+userRouter.route("/updateCoverImage").patch(
     verifyJWT,
     upload.fields(
         [{ 
