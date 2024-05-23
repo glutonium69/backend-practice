@@ -414,8 +414,12 @@ export const getChannelInfo = asyncHandler(async (req, res) => {
                 username: 1,
                 fullname: 1,
                 email: 1,
-                avatar: 1,
-                coverImage: 1,
+                avatar: {
+                    url: 1
+                },
+                coverImage: {
+                    url: 1
+                },
                 subscriberCount: 1,
                 subscribedCount: 1,
                 isSubscribed: 1
