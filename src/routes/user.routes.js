@@ -34,15 +34,9 @@ userRouter.route("/getUserInfo").get(verifyJWT, getUserInfo);
 
 userRouter.route("/updateAccDetails").patch(verifyJWT, updateAccDetails);
 
-userRouter.route("/updateAvatar").patch(
-    verifyJWT,
-    upload.fields(
-        [{ 
-            name: "avatar",
-            maxCount: 1
-        }]),
-    updateAvatar
-);
+userRouter.route("/updateAvatar").patch(verifyJWT, upload.single("avatar"), updateAvatar);
+
+userRouter.route("/updateCoverImage").patch(verifyJWT, upload.single("coverImage"), updateCoverImage);
 
 userRouter.route("/updateCoverImage").patch(
     verifyJWT,
