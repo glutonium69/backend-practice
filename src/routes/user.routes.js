@@ -38,12 +38,4 @@ userRouter.route("/updateAvatar").patch(verifyJWT, upload.single("avatar"), upda
 
 userRouter.route("/updateCoverImage").patch(verifyJWT, upload.single("coverImage"), updateCoverImage);
 
-userRouter.route("/updateCoverImage").patch(
-    verifyJWT,
-    upload.fields(
-        [{ 
-            name: "coverImage",
-            maxCount: 1
-        }]),
-    updateCoverImage
-);
+userRouter.route("/getWatchedHistory").get(verifyJWT, getWatchHistory);
