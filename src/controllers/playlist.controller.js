@@ -166,7 +166,7 @@ export const managePlaylistVideo = asyncHandler(async (req, res) => {
 
 	let updateOpeation = null;
 
-	switch (action) {
+	switch (Number(action)) {
 		case 1:
 			updateOpeation = { $push: { playlistVideos: new mongoose.Types.ObjectId(videoId) } }
 			break;
@@ -185,10 +185,10 @@ export const managePlaylistVideo = asyncHandler(async (req, res) => {
     );
 
     if (!updatedPlaylist.modifiedCount) {
-        throw new ApiError(500, "Failed to add video to playlist");
+        throw new ApiError(500, `Failed to ${action == 1 ? "add" : "remove"} video from playlist`);
     }
 
     return res
     .status(200)
-    .json(new ApiResponse(200, null, "Video added to playlist successfully"));
+    .json(new ApiResponse(200, null, `Video ${action == 1 ? "added to" : "removed from"} playlist successfully`));
 })
