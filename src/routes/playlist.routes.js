@@ -4,5 +4,5 @@ import { createPlaylist, getUserPlaylists } from "../controllers/playlist.contro
 
 export const playlistRouter = Router();
 
-playlistRouter.route("/createPlaylist").post(verifyJWT, createPlaylist);
+playlistRouter.route("/create").post(verifyJWT, createPlaylist);
 playlistRouter.route("/:userId").get(verifyJWT, getUserPlaylists);
