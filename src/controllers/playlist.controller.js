@@ -81,3 +81,21 @@ export const getPlaylistById = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, playlist[0].playlistVideos, "User playlist fetched successfully"));
 })
+
+export const getUserPlaylists = asyncHandler(async (req, res) => {
+    const { userId } = req.params;
+
+    if(!isValidObjectId(userId)){
+        throw new ApiError(400, "Invalid user ID");
+    }
+
+    const playlists = await Playlist.find({ owner: userId });
+
+    if(!playlists){
+        throw new ApiError(400, "Playlists fetch failed");
+    }
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200, playlists, "User playlists fetched successfully"));
+})
