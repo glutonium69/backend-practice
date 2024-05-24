@@ -148,3 +148,24 @@ export const updatePlaylist = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, playlist, "Playlist updated successfully"));
 })
+
+export const addVideoToPlaylist = asyncHandler(async (req, res) => {
+    const { playlistId, videoId } = req.params;
+
+    if(!isValidObjectId(playlistId) || !isValidObjectId(videoId)){
+        throw new ApiError(400, "Invalid playlisId or videoId");
+    }
+
+    const playlist = await Playlist.updateOne(
+        { _id: playlistId },
+        { $set: { playlistVideos: { $push: [videoId] } } }
+    );
+
+    if(!playlist){
+        throw new ApiError(500, "Failed to add video to playlist");
+    }
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200, null, "Video added to playlist successfully"));
+})
