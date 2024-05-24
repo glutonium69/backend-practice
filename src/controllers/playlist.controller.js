@@ -117,3 +117,34 @@ export const deletePlaylist = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, null, "Playlist deleted successfully"));
 })
+
+export const updatePlaylist = asyncHandler(async (req, res) => {
+    const { playlistId } = req.params;
+
+    if(!playlistId){
+        throw new ApiError(400, "Missing playlist ID");
+    }
+
+    const { name, description } = req.body;
+
+    if(!name || name.trim() === ""){
+        throw new ApiError(400, "Missing required field: name")
+    }
+
+    const updatedPlaylist = await Playlist.findByIdAndUpdate(playlistId, {
+        $set: {
+            name: name?.trim(),
+            description: description ? description?.trim() : ""
+        }
+    }, { new: true })
+
+    const playlist = await Playlist.findById(updatedPlaylist?._id).select("-playlistVideos");
+
+    if(!playlist){
+        throw new ApiError(500, "Playlist update failed");
+    }
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200, playlist, "Playlist updated successfully"));
+})
