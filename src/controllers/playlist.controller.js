@@ -99,3 +99,21 @@ export const getUserPlaylists = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, playlists, "User playlists fetched successfully"));
 })
+
+export const deletePlaylist = asyncHandler(async (req, res) => {
+    const { playlistId } = req.params;
+
+    if(!isValidObjectId(playlistId)){
+        throw new ApiError(400, "Invalid playlist ID");
+    }
+
+    const response = await Playlist.findByIdAndDelete(playlistId);
+
+    if(!response){
+        throw new ApiError(400, "Playlist deletion failed");
+    }
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200, null, "Playlist deleted successfully"));
+})

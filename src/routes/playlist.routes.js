@@ -1,9 +1,12 @@
 import { Router } from "express";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
-import { createPlaylist, getPlaylistById, getUserPlaylists } from "../controllers/playlist.controller.js";
+import { createPlaylist, deletePlaylist, getPlaylistById, getUserPlaylists } from "../controllers/playlist.controller.js";
 
 export const playlistRouter = Router();
+playlistRouter.use(verifyJWT);
 
-playlistRouter.route("/user/:userId").get(verifyJWT, getUserPlaylists);
-playlistRouter.route("/create").post(verifyJWT, createPlaylist);
-playlistRouter.route("/:playlistId").get(verifyJWT, getPlaylistById);
+playlistRouter.route("/user/:userId").get(getUserPlaylists);
+playlistRouter.route("/create").post(createPlaylist);
+playlistRouter.route("/:playlistId")
+    .get(getPlaylistById)
+    .delete(deletePlaylist)
