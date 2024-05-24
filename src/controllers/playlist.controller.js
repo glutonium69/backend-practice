@@ -114,6 +114,12 @@ export const deletePlaylist = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid playlist ID");
     }
 
+	const playlistExists = await Playlist.findById(playlistId);
+
+    if(!playlistExists){
+    	throw new ApiError(400, "Invalid playlist ID");
+    }
+
     const response = await Playlist.findByIdAndDelete(playlistId);
 
     if(!response){
@@ -130,6 +136,12 @@ export const updatePlaylist = asyncHandler(async (req, res) => {
 
     if(!isValidObjectId(playlistId)){
         throw new ApiError(400, "Invalid playlist ID");
+    }
+
+	const playlistExists = await Playlist.findById(playlistId);
+
+    if(!playlistExists){
+    	throw new ApiError(400, "Invalid playlist ID");
     }
 
     const { name, description } = req.body;
@@ -162,6 +174,12 @@ export const managePlaylistVideo = asyncHandler(async (req, res) => {
 
     if(!isValidObjectId(playlistId) || !isValidObjectId(videoId)){
         throw new ApiError(400, "Invalid playlistId or videoId");
+    }
+
+	const playlistExists = await Playlist.findById(playlistId);
+
+    if(!playlistExists){
+    	throw new ApiError(400, "Invalid playlist ID");
     }
 
 	let updateOpeation = null;
