@@ -163,12 +163,11 @@ export const addVideoToPlaylist = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid playlisId or videoId");
     }
 
-    const playlist = await Playlist.updateOne(
-        { _id: playlistId },
-        { $set: { playlistVideos: { $push: [videoId] } } }
-    );
+    const playlist = await Playlist.findById(playlistId);
+    playlist.playlistVideos.push(new mongoose.Types.ObjectId(videoId));
+    const updatedPlaylist = await playlist.save({ validateBeforeSave: false });
 
-    if(!playlist){
+    if(!updatedPlaylist){
         throw new ApiError(500, "Failed to add video to playlist");
     }
 
