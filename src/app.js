@@ -19,5 +19,5 @@ app.use(cookieParser()); // this lets us work with cookies like sending and rece
 // router must be imported after the middlewares are set / (in use)
 import { userRouter } from "./routes/user.routes.js";
 
-// /ai/v1/users will be our root url
-app.use("/api/v1/users", userRouter);
+// /ai/v1/ will be our root url
+app.use("/api/v1/user", userRouter);
