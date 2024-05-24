@@ -7,13 +7,13 @@ import mongoose, { isValidObjectId } from "mongoose";
 export const createPlaylist = asyncHandler(async (req, res) => {
     const { name, description } = req.body;
 
-    if(!name || !description){
-        throw new ApiError(400, "Missing required fields: name and description");
+    if(!name || name.trim() === ""){
+        throw new ApiError(400, "Missing required fields: name");
     }
 
     const createdPlaylist = await Playlist.create({
         name: name?.trim(),
-        description: description?.trim(),
+        description: description ? description?.trim() : "",
         owner: req?.user?._id
     });
 
