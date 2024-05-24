@@ -168,9 +168,9 @@ export const managePlaylistVideo = asyncHandler(async (req, res) => {
 
 	switch (Number(action)) {
 		case 1:
-			const playlist = await Playlist.findOne({ _id: playlistId, playlistVideos: { $in: [videoId] } });
-			if(playlist){
-				throw new ApiError(400, "Video is already in the playlist");
+			const videoExists = await Playlist.findOne({ _id: playlistId, playlistVideos: { $in: [videoId] } });
+			if(videoExists){
+				throw new ApiError(400, "Video is already exists within the playlist");
 			}
 			updateOpeation = { $push: { playlistVideos: new mongoose.Types.ObjectId(videoId) } }
 			break;
