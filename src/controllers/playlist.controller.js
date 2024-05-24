@@ -121,8 +121,8 @@ export const deletePlaylist = asyncHandler(async (req, res) => {
 export const updatePlaylist = asyncHandler(async (req, res) => {
     const { playlistId } = req.params;
 
-    if(!playlistId){
-        throw new ApiError(400, "Missing playlist ID");
+    if(!isValidObjectId(playlistId)){
+        throw new ApiError(400, "Invalid playlist ID");
     }
 
     const { name, description } = req.body;
