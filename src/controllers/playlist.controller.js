@@ -156,17 +156,34 @@ export const updatePlaylist = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, playlist, "Playlist updated successfully"));
 })
 
-export const addVideoToPlaylist = asyncHandler(async (req, res) => {
+export const managePlaylistVideo = asyncHandler(async (req, res) => {
     const { playlistId, videoId } = req.params;
+	const action = req?.query?.action;
 
     if(!isValidObjectId(playlistId) || !isValidObjectId(videoId)){
-        throw new ApiError(400, "Invalid playlisId or videoId");
+        throw new ApiError(400, "Invalid playlistId or videoId");
     }
+
+	let updateOpeation = null;
+
+	switch (action) {
+		case 1:
+			updateOpeation = { $push: { playlistVideos: new mongoose.Types.ObjectId(videoId) } }
+			break;
+
+		case 0:
+			updateOpeation = { $pull: { playlistVideos: new mongoose.Types.ObjectId(videoId) } }
+			break;
+
+		default:
+			throw new ApiError(400, "Please define proper action query in the URL");
+	}
 
     const updatedPlaylist = await Playlist.updateOne(
         { _id: playlistId },
-        { $pull: { playlistVideos: new mongoose.Types.ObjectId(videoId) } }
+        updateOpeation,
     );
+
     if (!updatedPlaylist.modifiedCount) {
         throw new ApiError(500, "Failed to add video to playlist");
     }
