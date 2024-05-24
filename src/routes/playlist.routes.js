@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
-import { createPlaylist, getUserPlaylists } from "../controllers/playlist.controller.js";
+import { createPlaylist, getPlaylistById } from "../controllers/playlist.controller.js";
 
 export const playlistRouter = Router();
 
 playlistRouter.route("/create").post(verifyJWT, createPlaylist);
-playlistRouter.route("/:userId").get(verifyJWT, getUserPlaylists);
+playlistRouter.route("/:playlistId").get(verifyJWT, getPlaylistById);
