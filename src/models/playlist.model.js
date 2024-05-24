@@ -14,7 +14,7 @@ const playlistSchema = new Schema(
 			type: mongoose.Types.ObjectId,
 			ref: "User"
 		},
-		videos: [
+		playlistVideos: [
 			{
 				type: mongoose.Types.ObjectId,
 				ref: "Video"
