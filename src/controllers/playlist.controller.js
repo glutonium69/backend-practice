@@ -168,6 +168,10 @@ export const managePlaylistVideo = asyncHandler(async (req, res) => {
 
 	switch (Number(action)) {
 		case 1:
+			const playlist = await Playlist.findOne({ _id: playlistId, playlistVideos: { $in: [videoId] } });
+			if(playlist){
+				throw new ApiError(400, "Video is already in the playlist");
+			}
 			updateOpeation = { $push: { playlistVideos: new mongoose.Types.ObjectId(videoId) } }
 			break;
 
@@ -185,7 +189,7 @@ export const managePlaylistVideo = asyncHandler(async (req, res) => {
     );
 
     if (!updatedPlaylist.modifiedCount) {
-        throw new ApiError(500, `Failed to ${action == 1 ? "add" : "remove"} video from playlist`);
+        throw new ApiError(500, `Failed to ${action == 1 ? "add" : "remove"} video`);
     }
 
     return res
