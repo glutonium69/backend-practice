@@ -35,51 +35,58 @@ export const getPlaylistById = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid playlist ID");
     }
 
-    const playlist = await Playlist.aggregate([
-        {
-            $match: {
-                _id: new mongoose.Types.ObjectId(playlistId)
-            },
-        },
-        {
-            $lookup: {
-                from: "videos",
-                localField: "playlistVideos",
-                foreignField: "_id",
-                as: "playlistVideos",
-                pipeline: [
-                    {
-                        $lookup: {
-                            from: "users",
-                            localField: "owner",
-                            foreignField: "_id",
-                            as: "owner",
-                            pipeline: [
-                                {
-                                    $project: {
-                                        username: 1,
-                                        fullname: 1,
-                                        avatar: 1
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        $addFields: {
-                            owner: {
-                                $first: "$owner"
-                            }
-                        }
-                    }
-                ]
-            }
-        }
-    ])
+const playlist = await Playlist.aggregate([
+	{
+		$match: {
+			_id: new mongoose.Types.ObjectId(playlistId)
+		},
+	},
+	{
+		$lookup: {
+			from: "videos",
+			localField: "playlistVideos",
+			foreignField: "_id",
+			as: "videos",
+			pipeline: [
+				{
+					$lookup: {
+						from: "users",
+						localField: "owner",
+						foreignField: "_id",
+						as: "owner",
+						pipeline: [
+							{
+								$project: {
+									username: 1,
+									fullname: 1,
+									avatar: {
+										url: 1
+									}
+								}
+							}
+						]
+					}
+				},
+				{
+					$addFields: {
+						owner: {
+							$first: "$owner"
+						}
+					}
+				}
+			]
+		}
+	},
+	{
+		$project: {
+			playlistVideos: 0
+		}
+	}
+])
 
     return res
     .status(200)
-    .json(new ApiResponse(200, playlist, "User playlist fetched successfully"));
+    .json(new ApiResponse(200, playlist[0], "User playlist fetched successfully"));
 })
 
 export const getUserPlaylists = asyncHandler(async (req, res) => {
