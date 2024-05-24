@@ -12,8 +12,8 @@ export const createPlaylist = asyncHandler(async (req, res) => {
     }
 
     const createdPlaylist = await Playlist.create({
-        name,
-        description,
+        name: name?.trim(),
+        description: description?.trim(),
         owner: req?.user?._id
     });
 
@@ -79,7 +79,7 @@ export const getPlaylistById = asyncHandler(async (req, res) => {
 
     return res
     .status(200)
-    .json(new ApiResponse(200, playlist[0].playlistVideos, "User playlist fetched successfully"));
+    .json(new ApiResponse(200, playlist, "User playlist fetched successfully"));
 })
 
 export const getUserPlaylists = asyncHandler(async (req, res) => {
@@ -89,7 +89,7 @@ export const getUserPlaylists = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid user ID");
     }
 
-    const playlists = await Playlist.find({ owner: userId });
+    const playlists = await Playlist.find({ owner: userId }).select("-playlistVideos");
 
     if(!playlists){
         throw new ApiError(400, "Playlists fetch failed");
