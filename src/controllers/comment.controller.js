@@ -52,8 +52,8 @@ export const getVideoComments = asyncHandler(async (req, res) => {
     ]
 
     const commentsPaginated = await Comment.aggregatePaginate(Comment.aggregate(pipeLine), {
-        page: Number(page),
-        limit: Number(limit)
+        page: parseInt(page),
+        limit: parseInt(limit)
     })
 
     if (!commentsPaginated) {
