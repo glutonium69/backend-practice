@@ -125,7 +125,7 @@ export const updateComment = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Comment update failed");
     }
 
-    return res.status(200).json(new ApiResponse(200, null, "Comment updated successfully"));
+    return res.status(200).json(new ApiResponse(200, updateComment, "Comment updated successfully"));
 })
 
 export const deleteComment = asyncHandler(async (req, res) => {
