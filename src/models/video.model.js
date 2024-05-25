@@ -13,7 +13,8 @@ const videoSchema = new Schema(
         },
         title: {
             type: String,
-            required: true
+            required: true,
+            index: true
         },
         description: {
             type: String,
@@ -27,7 +28,7 @@ const videoSchema = new Schema(
             type: Number,
             default: 0
         },
-        isPublished: {
+        isPublic: {
             type: Boolean,
             default: true
         },
