@@ -105,7 +105,27 @@ export const addComment = asyncHandler(async (req, res) => {
 })
 
 export const updateComment = asyncHandler(async (req, res) => {
+    const { commentId } = req.params;
+    const { content } = req.body;
 
+    if (!isValidObjectId(commentId)) {
+        throw new ApiError(400, "Invalid comment id");
+    }
+
+    if(!content || content.trim() === ""){
+        throw new ApiError(400, "Content is required");
+    }
+
+    const updateComment = await Comment.findByIdAndUpdate(commentId, 
+        { $set: { content: content.trim() } },
+        { new: true }
+    );
+
+    if (!updateComment) {
+        throw new ApiError(404, "Comment update failed");
+    }
+
+    return res.status(200).json(new ApiResponse(200, null, "Comment updated successfully"));
 })
 
 export const deleteComment = asyncHandler(async (req, res) => {
@@ -118,8 +138,8 @@ export const deleteComment = asyncHandler(async (req, res) => {
     const deleteComment = await Comment.findByIdAndDelete(commentId);
 
     if (!deleteComment) {
-        throw new ApiError(404, "Invalid comment id");
+        throw new ApiError(404, "Comment deletion failed");
     }
 
-    return res.status(200).json(new ApiResponse(200, null, "Comment deleted"));
+    return res.status(200).json(new ApiResponse(200, null, "Comment deleted successfully"));
 })
