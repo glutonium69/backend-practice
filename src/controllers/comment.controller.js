@@ -13,6 +13,10 @@ export const getVideoComments = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid video id");
     }
 
+    if (isNaN(parseInt(page)) || isNaN(parseInt(limit))) {
+        throw new ApiError(400, "Invalid page or limit. Please provide valid number");
+    }
+
     const video = await Video.findById(videoId);
 
     if (!video) {
