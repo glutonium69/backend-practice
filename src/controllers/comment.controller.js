@@ -13,6 +13,12 @@ export const getVideoComments = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid video id");
     }
 
+    const video = await Video.findById(videoId);
+
+    if (!video) {
+        throw new ApiError(404, "Invalid video id");
+    }
+
     const pipeLine = [
         {
             $match: {
@@ -50,7 +56,7 @@ export const getVideoComments = asyncHandler(async (req, res) => {
                 createdAt: 1
             }
         }
-    ]
+    ];
 
     const commentsPaginated = await Comment.aggregatePaginate(Comment.aggregate(pipeLine), {
         page: parseInt(page),
