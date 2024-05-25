@@ -92,7 +92,7 @@ export const addComment = asyncHandler(async (req, res) => {
     }
 
     const comment = await Comment.create({
-        content,
+        content: content.trim(),
         owner: req.user?._id,
         video: videoId
     })
