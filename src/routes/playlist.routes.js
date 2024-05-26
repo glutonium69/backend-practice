@@ -14,4 +14,4 @@ playlistRouter.route("/:playlistId")
     .delete(deletePlaylist)
     .patch(updatePlaylist);
 
-playlistRouter.route("/add/:videoId/:playlistId").patch(managePlaylistVideo);
+playlistRouter.route("/manage/:playlistId/:videoId").patch(managePlaylistVideo);
