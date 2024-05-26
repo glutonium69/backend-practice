@@ -6,7 +6,9 @@ const storage = multer.diskStorage({
         cb(null, "./public/temp");
     },
     filename: function (_, file, cb) {
-        cb(null, file.originalname);
+        const extension = file.originalname.split(".").pop();
+        const filename = file.originalname.replace(`.${extension}`, `-${Date.now()}`);
+        cb(null, (filename + "." + extension));
     }
 })
 
