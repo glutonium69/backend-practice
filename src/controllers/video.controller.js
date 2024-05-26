@@ -4,7 +4,7 @@ import { User } from "../models/user.model.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
-import { uploadFileOnCloudinary } from "../utils/cloudinary.js"
+import { uploadFileOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js"
 
 
 export const getAllVideos = asyncHandler(async (req, res) => {
@@ -26,37 +26,35 @@ export const publishAVideo = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid visibility option. Available options: public, private");
     }
 
-    const videoFile = req.files?.videoFile[0]?.path;
-    const thumbnailFile = req.files?.thumbnail[0]?.path;
+    const videoFilePath = req.files?.videoFile[0]?.path;
+    const thumbnailFilePath = req.files?.thumbnail[0]?.path;
 
-    if (!videoFile || !thumbnailFile) {
+    if (!videoFilePath || !thumbnailFilePath) {
         throw new ApiError(400, "Video and thumbnail are required");
     }
 
-    const uploadedVideo = await uploadFileOnCloudinary(videoFile);
+    const videoFileType = req.files?.videoFile[0]?.mimetype;
+    const thumbnailFileType = req.files?.thumbnail[0]?.mimetype;
 
-    if (!updateVideo) {
+    if (!videoFileType.startsWith("video")) {
+        throw new ApiError(400, "Provided video file is not type video");
+    }
+
+    if (!thumbnailFileType.startsWith("image")) {
+        throw new ApiError(400, "Provided image file is not type image");
+    }
+
+    const uploadedVideo = await uploadFileOnCloudinary(videoFilePath);
+    const uploadedThumbnail = await uploadFileOnCloudinary(thumbnailFilePath);
+
+    if (!uploadedVideo || !uploadedThumbnail) {
+        await deleteFromCloudinary(uploadedThumbnail.public_id, "image");
+        await deleteFromCloudinary(uploadedVideo.public_id, "video");
         throw new ApiError(500, "Video upload failed");
     }
 
-    if (uploadedVideo.resource_type !== "video") {
-        await deleteFromCloudinary(uploadedVideo.public_id);
-        throw new ApiError(400, "Video file is not a video");
-    }
-
-    const uploadedThumbnail = await uploadFileOnCloudinary(thumbnailFile);
-
-    if (!uploadedThumbnail) {
-        throw new ApiError(500, "Thumbnail upload failed");
-    }
-
-    if (uploadedThumbnail.resource_type !== "image") {
-        await deleteFromCloudinary(uploadedThumbnail.public_id);
-        throw new ApiError(400, "Thumbnail file is not an image");
-    }
-
     const video = await Video.create({
-        videoFile: uploadedVideo.playback_url,
+        videoFile: uploadedVideo.url,
         thumbnail: uploadedThumbnail.url,
         title: title.trim(),
         description: description.trim(),
