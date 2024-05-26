@@ -74,9 +74,46 @@ export const publishAVideo = asyncHandler(async (req, res) => {
 })
 
 export const getVideoById = asyncHandler(async (req, res) => {
-    const { videoId } = req.params
+    const { videoId } = req.params;
+
+    if (!isValidObjectId(videoId)) {
+        throw new ApiError(400, "Invalid video id");
+    }
+
+    const video = await Video.findById(videoId).populate(
+        "owner",
+        "username fullname avatar.url"
+    );
+
+    if (!video) {
+        throw new ApiError(404, "Video not found");
+    }
+
+    video.views += 1;
+    await video.save({ validateBeforeSave: false });
+
+    const isSubscribed = await Subscription.findOne({
+        subscriber: req.user?._id,
+        channel: video.owner._id
+    });
+
+    const subscriberCount = await Subscription.countDocuments({ cahnnel: video.owner._id });
+
+    // Convert the owner to a plain object
+    const owner = video.owner.toObject();
+    owner.subscriberCount = subscriberCount;
+    owner.isSubscribedTo = !!isSubscribed;
+
+    // Return the video along with the modified owner
+    const data = {
+        ...video.toObject(),
+        owner
+    };
+
+
     return res
-    .status(200)
+        .status(200)
+        .json(new ApiResponse(200, data, "Video fetched successfully"));
 })
 
 export const updateVideo = asyncHandler(async (req, res) => {
