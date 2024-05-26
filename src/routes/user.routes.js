@@ -21,12 +21,12 @@ userRouter.route("/register").post(
 
 userRouter.route("/login").post(loginUser);
 
+userRouter.route("/refreshToken").post(requestAccessToken);
+
 // secured route
 
 // the verifyJWT is a custom middleware that uses access token from saved cookie to check if user is logged in
 userRouter.route("/logout").post(verifyJWT, logoutUser);
-
-userRouter.route("/refreshToken").post(requestAccessToken);
 
 userRouter.route("/updatePassword").post(verifyJWT, updatePassword);
 
@@ -41,5 +41,3 @@ userRouter.route("/updateCoverImage").patch(verifyJWT, upload.single("coverImage
 userRouter.route("/c/:username").get(verifyJWT, getChannelInfo);
 
 userRouter.route("/getWatchedHistory").get(verifyJWT, getWatchHistory);
-
-userRouter.route("/requestAccessToken").get(verifyJWT, requestAccessToken);
