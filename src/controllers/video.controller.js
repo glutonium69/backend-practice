@@ -60,7 +60,7 @@ export const publishAVideo = asyncHandler(async (req, res) => {
         thumbnail: uploadedThumbnail.url,
         title: title.trim(),
         description: description.trim(),
-        duration: updateVideo.duration.toFixed(2),
+        duration: uploadedVideo.duration.toFixed(2),
         isPublic: visibility === "public",
         owner: req.user?._id
     });
