@@ -55,7 +55,7 @@ export const publishAVideo = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Thumbnail file is not an image");
     }
 
-    const video = await new Video.create({
+    const video = await Video.create({
         videoFile: uploadedVideo.playback_url,
         thumbnail: uploadedThumbnail.url,
         title: title.trim(),
