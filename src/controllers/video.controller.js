@@ -15,9 +15,63 @@ export const getAllVideos = asyncHandler(async (req, res) => {
 })
 
 export const publishAVideo = asyncHandler(async (req, res) => {
-    const { title, description } = req.body
+    const { title, description = "" } = req.body;
+    const { visibility = "public" } = req.query;
+
+    if (!title || title.trim() === "") {
+        throw new ApiError(400, "Title is required");
+    }
+
+    if (visibility !== "public" && visibility !== "private") {
+        throw new ApiError(400, "Invalid visibility option. Available options: public, private");
+    }
+
+    const videoFile = req.files?.videoFile[0]?.path;
+    const thumbnailFile = req.files?.thumbnail[0]?.path;
+
+    if (!videoFile || !thumbnailFile) {
+        throw new ApiError(400, "Video and thumbnail are required");
+    }
+
+    const uploadedVideo = await uploadFileOnCloudinary(videoFile);
+
+    if (!updateVideo) {
+        throw new ApiError(500, "Video upload failed");
+    }
+
+    if (uploadedVideo.resource_type !== "video") {
+        await deleteFromCloudinary(uploadedVideo.public_id);
+        throw new ApiError(400, "Video file is not a video");
+    }
+
+    const uploadedThumbnail = await uploadFileOnCloudinary(thumbnailFile);
+
+    if (!uploadedThumbnail) {
+        throw new ApiError(500, "Thumbnail upload failed");
+    }
+
+    if (uploadedThumbnail.resource_type !== "image") {
+        await deleteFromCloudinary(uploadedThumbnail.public_id);
+        throw new ApiError(400, "Thumbnail file is not an image");
+    }
+
+    const video = await new Video.create({
+        videoFile: uploadedVideo.playback_url,
+        thumbnail: uploadedThumbnail.url,
+        title: title.trim(),
+        description: description.trim(),
+        duration: updateVideo.duration.toFixed(2),
+        isPublic: visibility === "public",
+        owner: req.user?._id
+    });
+
+    if (!video) {
+        throw new ApiError(500, "Video creation failed");
+    }
+
     return res
-    .status(200)
+        .status(200)
+        .json(new ApiResponse(200, video, "Video created successfully"))
 })
 
 export const getVideoById = asyncHandler(async (req, res) => {
