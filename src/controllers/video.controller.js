@@ -164,7 +164,7 @@ export const updateVideo = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Video not found");
     }
 
-    if (video.owner.toString() !== req.user?._id.toString()){
+    if (video.owner.toString() !== req.user?._id.toString()) {
         throw new ApiError(400, "Invalid request. Request user must be owner of the video");
     }
 
@@ -175,14 +175,14 @@ export const updateVideo = asyncHandler(async (req, res) => {
     } = req.body;
 
     const thumbnailPath = req.file?.path;
-    
+
     if (!title && !description && visibility === "public" && !thumbnailPath) {
         throw new ApiError(400, "No changes made");
     }
 
     const thumbnailFileType = req.file?.mimetype;
 
-    if(thumbnailFileType && !thumbnailFileType.startsWith("image")){
+    if (thumbnailFileType && !thumbnailFileType.startsWith("image")) {
         throw new ApiError(400, "Thumbnail file must be an image file");
     }
 
@@ -192,7 +192,7 @@ export const updateVideo = asyncHandler(async (req, res) => {
 
     let uploadedThumbnail = undefined;
 
-    if(thumbnailPath){
+    if (thumbnailPath) {
 
         uploadedThumbnail = await uploadFileOnCloudinary(thumbnailPath);
 
@@ -213,12 +213,12 @@ export const updateVideo = asyncHandler(async (req, res) => {
         { new: true }
     );
 
-    if(updatedVideo && uploadedThumbnail){
+    if (updatedVideo && uploadedThumbnail) {
         // delete previous thumbnail from cloudinary if new thumbnail uploaded and video updated
         const publicId = video.thumbnail.split("/").pop().split(".")[0];
         await deleteFromCloudinary(publicId, "image");
     }
-    else if(!updatedVideo && uploadedThumbnail){
+    else if (!updatedVideo && uploadedThumbnail) {
         // delete new thumbnail from cloudinary if new thumbanail uploaded but video didnt update
         await deleteFromCloudinary(uploadedThumbnail.public_id, "image");
         throw new ApiError(500, "Video update failed");
@@ -231,8 +231,32 @@ export const updateVideo = asyncHandler(async (req, res) => {
 
 export const deleteVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
+
+    if (!isValidObjectId(videoId)) {
+        throw new ApiError(400, "Invalid video id");
+    }
+
+    const video = await Video.findById(videoId);
+
+    if (!video) {
+        throw new ApiError(404, "Video not found");
+    }
+
+    if (video.owner.toString() !== req.user?._id.toString()) {
+        throw new ApiError(400, "Invalid request. Request user must be owner of the video");
+    }
+
+    const videoFilePublicId = video.videoFile.split("/").pop().split(".")[0];
+    const thumbnailFilePublicId = video.thumbnail.split("/").pop().split(".")[0];
+
+    await deleteFromCloudinary(videoFilePublicId, "video");
+    await deleteFromCloudinary(thumbnailFilePublicId, "image");
+
+    await Video.findByIdAndDelete(videoId);
+
     return res
         .status(200)
+        .json(new ApiResponse(200, null, "Video deleted successfully"));
 })
 
 export const togglePublishStatus = asyncHandler(async (req, res) => {
