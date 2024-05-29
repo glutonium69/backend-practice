@@ -13,8 +13,6 @@ export const getAllVideos = asyncHandler(async (req, res) => {
         page = 1,
         limit = 10,
         query = null,
-        sortBy = "createdAt",
-        sortType = "asc",
         userId
     } = req.query;
 
@@ -22,32 +20,38 @@ export const getAllVideos = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid user id");
     }
 
+    const user = await User.findById(userId);
+
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
     if (isNaN(parseInt(page)) || isNaN(parseInt(limit))) {
         throw new ApiError(400, "Invalid page or limit. Please provide valid number");
     }
 
-    const sortByOptions = [
-        "createdAt",
-        "title",
-        "views",
-        "length"
+    const regex = query.split(" ").filter(q => q.trim() !== "").join("|");
+
+    const pipeline = [
+        {
+            $match: {
+                $and: [
+                    { isPublic: true }
+                ]
+            }
+        }
     ];
 
-    if (!sortByOptions.includes(sortBy)) {
-        throw new ApiError(400, "Invalid sort by option. Available options: createdAt, title, views, length");
-    }
+    query && pipeline[0].$match.$and.push( { title: { $regex: regex, $options: "i" } })
 
-    const sortTypeOptions = [
-        "asc",
-        "desc"
-    ];
-
-    if (!sortTypeOptions.includes(sortType)) {
-        throw new ApiError(400, "Invalid sort type option. Available options: asc, desc");
-    }
+    const videosPaginated = await Video.aggregatePaginate(Video.aggregate(pipeline), {
+        page: parseInt(page),
+        limit: parseInt(limit)
+    })
 
     return res
         .status(200)
+        .json(new ApiResponse(200, videosPaginated, "Videos fetched successfully"));
 })
 
 export const publishAVideo = asyncHandler(async (req, res) => {
