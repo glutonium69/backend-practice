@@ -9,12 +9,7 @@ import { uploadFileOnCloudinary, deleteFromCloudinary } from "../utils/cloudinar
 
 
 export const getAllVideos = asyncHandler(async (req, res) => {
-    const {
-        page = 1,
-        limit = 10,
-        query = null,
-        userId
-    } = req.query;
+    const { page = 1, limit = 10, query = null, userId } = req.query;
 
     if (!isValidObjectId(userId)) {
         throw new ApiError(400, "Invalid user id");
@@ -30,28 +25,78 @@ export const getAllVideos = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid page or limit. Please provide valid number");
     }
 
-    const regex = query.split(" ").filter(q => q.trim() !== "").join("|");
+    const subscribedChannels = await Subscription.aggregate([
+        {
+            $match: {
+                subscriber: new mongoose.Types.ObjectId(userId)
+            }
+        },
+        {
+            $sort: {
+                views: -1
+            }
+        },
+        {
+            $group: {
+                _id: null, // This groups all documents together
+                ids: { $push: "$channel" }
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                ids: 1
+            }
+        }
+    ]);
 
-    const pipeline = [
+    const subscribedChannelIds = subscribedChannels.length > 0 ? subscribedChannels[0].ids : [];
+    const watchHistory = (await User.findById(userId)).watchHistory;
+    const subedChannelPipeline = [
         {
             $match: {
                 $and: [
-                    { isPublic: true }
+                    { isPublic: true },
+                    { owner: { $in: subscribedChannelIds } },
+                    { _id: { $nin: watchHistory } }
                 ]
             }
         }
     ];
 
-    query && pipeline[0].$match.$and.push( { title: { $regex: regex, $options: "i" } })
+    const nonSubedChannlePipeline = [
+        {
+            $match: {
+                $and: [
+                    { isPublic: true },
+                    { owner: { $nin: subscribedChannelIds } },
+                    { _id: { $nin: watchHistory } }
+                ]
+            }
+        }
+    ];
 
-    const videosPaginated = await Video.aggregatePaginate(Video.aggregate(pipeline), {
+    const regex = query?.split(" ").filter(q => q.trim() !== "").join("|");
+
+    if (query) {
+        subedChannelPipeline[0].$match.$and.push({ title: { $regex: regex, $options: "i" } });
+        nonSubedChannlePipeline[0].$match.$and.push({ title: { $regex: regex, $options: "i" } });
+    }
+
+    const subedChannel = await Video.aggregatePaginate(Video.aggregate(subedChannelPipeline), {
         page: parseInt(page),
         limit: parseInt(limit)
-    })
+    });
+
+    const nonSubedChannle = await Video.aggregatePaginate(Video.aggregate(nonSubedChannlePipeline),
+        {
+            page: parseInt(page),
+            limit: parseInt(limit)
+        });
 
     return res
         .status(200)
-        .json(new ApiResponse(200, videosPaginated, "Videos fetched successfully"));
+        .json(new ApiResponse(200, { subedChannel, nonSubedChannle }, "Videos fetched successfully"));
 })
 
 export const publishAVideo = asyncHandler(async (req, res) => {
